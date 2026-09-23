@@ -13,6 +13,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
 #power{position:fixed;left:50%;top:62px;transform:translateX(-50%);width:min(70vw,330px);height:13px;border:2px solid #fff;border-radius:20px;overflow:hidden;background:#0008;display:none}
 #power i{display:block;height:100%;width:0%;background:#ffd400}
 #soundBtn{position:fixed;left:12px;bottom:76px;border:0;border-radius:14px;width:44px;height:42px;background:#111cdd;color:#fff;font-size:20px;box-shadow:0 2px 8px #0008;z-index:5}
+#levelRestart{position:fixed;left:50%;top:calc(50% + 64px);transform:translateX(-50%);display:none;border:0;border-radius:14px;padding:11px 18px;background:#fff;color:#173014;font-size:15px;font-weight:900;box-shadow:0 2px 8px #0008;z-index:6}
 #restart{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);display:none;border:0;border-radius:16px;padding:13px 20px;background:#ffd400;color:#111;font-size:18px;font-weight:900}
 #aboutBtn{position:fixed;right:12px;bottom:76px;border:0;border-radius:14px;padding:10px 13px;background:#111cdd;color:#fff;font-size:13px;font-weight:900;box-shadow:0 2px 8px #0008;z-index:5}
 #aboutModal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
@@ -34,11 +35,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
  <div class="badge">Gagnées: <span id="won">0</span></div>
  <div class="badge">Tirs: <span id="shots">0</span></div>
  <div class="badge">Score: <span id="score">0</span></div>
+ <div class="badge">Niveau: <span id="level">1</span></div>
  <div class="badge best">Record: <span id="best">0</span></div>
 </div>
 <div id="power"><i></i></div>
 <div id="msg">⚪ Place la bille blanche autour du cercle.</div>
 <button id="restart">REJOUER</button>
+<button id="levelRestart">↻ NIVEAU</button>
 <button id="soundBtn" aria-label="Son">🔊</button>
 <button id="aboutBtn" aria-label="À propos">À PROPOS</button>
 <div id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
@@ -48,7 +51,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
     <h2 id="aboutTitle">Jules Enock Lestekè</h2>
     <h3>Jwèt Mab</h3>
     <p>Un jeu de billes simple, inspiré du jeu de mab.</p>
-    <p><strong>Version :</strong> 1.1.0</p>
+    <p><strong>Version :</strong> 1.2.0</p>
     <p><strong>Créé par :</strong> Jules Enock Lestekè</p>
     <p class="offline">📴 Fonctionne hors connexion.</p>
     <button id="aboutOk">FERMER</button>
@@ -59,12 +62,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
 "use strict";
 const C=document.getElementById("game"),ctx=C.getContext("2d");
 const leftEl=document.getElementById("left"),wonEl=document.getElementById("won"),
-shotsEl=document.getElementById("shots"),scoreEl=document.getElementById("score"),bestEl=document.getElementById("best"),soundBtn=document.getElementById("soundBtn");
+shotsEl=document.getElementById("shots"),scoreEl=document.getElementById("score"),bestEl=document.getElementById("best"),levelEl=document.getElementById("level"),soundBtn=document.getElementById("soundBtn"),levelRestart=document.getElementById("levelRestart");
 const msg=document.getElementById("msg"),powerBox=document.getElementById("power"),powerFill=powerBox.firstElementChild,restart=document.getElementById("restart");
 
 let W,H,cx,cy,R,dpr=1;
 let shooter,balls,phase,score,shots,won,aim,place,settleTimer,shotId=0,combo=0,particles=[],shake=0;
 let bestScore=Number(localStorage.getItem("jwetMabBest")||0);
+let level=Math.max(1,Math.min(3,Number(localStorage.getItem("jwetMabLevel")||1)));
 let audioCtx=null,soundOn=localStorage.getItem("jwetMabSound")!=="off";
 bestEl.textContent=bestScore;soundBtn.textContent=soundOn?"🔊":"🔇";
 function tone(freq=440,duration=.05,type="sine",gain=.035){if(!soundOn)return;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=gain;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);o.stop(audioCtx.currentTime+duration)}catch(e){}}
@@ -92,17 +96,22 @@ function newGame(){
  score=0;shots=0;won=0;shotId=0;combo=0;particles=[];shake=0;phase="place";aim=null;place=null;settleTimer=0;
  shooter=ball(0,0,14,"white"); shooter.angle=-Math.PI/2;
  placeShooter(shooter.angle);
- const p=[[-.52,-.12],[-.27,-.34],[0,-.35],[.27,-.34],[.52,-.12],
- [-.40,.14],[-.14,.08],[.15,.08],[.40,.14],[0,.34]];
- balls=p.map((q,i)=>ball(cx+q[0]*R,cy+q[1]*R,13,["#ff4040","#ffd22e","#42a5ff","#ff70c8","#ff8a35","#73e06f","#b58cff","#fff","#43d6d1","#ff9a42"][i]));
- restart.style.display="none"; powerBox.style.display="none";
- setMsg("⚪ Déplace la bille blanche autour du cercle pour choisir ton angle.");
+ const patterns=[
+  [[-.52,-.12],[-.27,-.34],[0,-.35],[.27,-.34],[.52,-.12],[-.40,.14],[-.14,.08],[.15,.08],[.40,.14],[0,.34]],
+  [[-.58,-.18],[-.38,-.38],[-.13,-.24],[.15,-.42],[.43,-.30],[.58,-.02],[-.48,.10],[-.22,.18],[.12,.10],[.38,.18],[0,.38]],
+  [[-.58,-.28],[-.30,-.45],[0,-.28],[.30,-.45],[.58,-.22],[-.52,.08],[-.25,.02],[.05,.12],[.34,.02],[.55,.20],[-.12,.34],[.18,.38]]
+ ];
+ const p=patterns[Math.min(level,3)-1];
+ const colors=["#ff4040","#ffd22e","#42a5ff","#ff70c8","#ff8a35","#73e06f","#b58cff","#fff","#43d6d1","#ff9a42","#e05cff","#65e6ff"];
+ balls=p.map((q,i)=>ball(cx+q[0]*R,cy+q[1]*R,13,colors[i%colors.length]));
+ restart.style.display="none"; levelRestart.style.display="none"; powerBox.style.display="none";
+ setMsg("🎯 Niveau "+level+" — sors toutes les billes du cercle.");
  updateUI();
 }
 function setMsg(t){msg.textContent=t}
 function updateUI(){
  leftEl.textContent=balls.filter(b=>b.active).length;
- wonEl.textContent=won;shotsEl.textContent=shots;scoreEl.textContent=score;bestEl.textContent=Math.max(bestScore,score);
+ wonEl.textContent=won;shotsEl.textContent=shots;scoreEl.textContent=score;bestEl.textContent=Math.max(bestScore,score);levelEl.textContent=level;
 }
 
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -236,12 +245,24 @@ function physics(){
 }
 
 function finish(win,reason){
- phase="over";if(score>bestScore){bestScore=score;localStorage.setItem("jwetMabBest",String(bestScore));}updateUI();restart.style.display="block";tone(win?880:120,.18,win?"sine":"sawtooth",.06);
- setMsg(win
-   ?"🏆 PARTIE TERMINÉE ! Toutes les billes sont sorties. Billes gagnées : "+won+" • Tirs : "+shots+" • Score : "+score
-   :"❌ PARTIE TERMINÉE. "+(reason||"Plus aucun tir possible.")+" Billes gagnées : "+won+" • Tirs : "+shots+" • Score : "+score);
+ phase="over";if(score>bestScore){bestScore=score;localStorage.setItem("jwetMabBest",String(bestScore));}updateUI();tone(win?880:120,.18,win?"sine":"sawtooth",.06);
+ if(win){
+   if(level<3){
+     level++;localStorage.setItem("jwetMabLevel",String(level));updateUI();
+     setMsg("🏆 Niveau réussi ! Passage au niveau "+level+"…");
+     levelRestart.textContent="▶ NIVEAU "+level; levelRestart.style.display="block"; restart.style.display="none";
+     setTimeout(()=>{levelRestart.style.display="none";newGame()},900);
+   }else{
+     setMsg("🏆 TOUS LES NIVEAUX TERMINÉS ! Score : "+score+" • Tirs : "+shots+" • Record : "+bestScore);
+     restart.textContent="REJOUER LES NIVEAUX";restart.style.display="block";levelRestart.style.display="block";
+   }
+ }else{
+   restart.textContent="REJOUER";restart.style.display="block";levelRestart.style.display="block";
+   setMsg("❌ NIVEAU ÉCHOUÉ. "+(reason||"Plus aucun tir possible.")+" Billes gagnées : "+won+" • Tirs : "+shots+" • Score : "+score);
+ }
 }
-restart.onclick=newGame;
+restart.onclick=()=>{level=1;localStorage.setItem("jwetMabLevel","1");restart.textContent="REJOUER";newGame()};
+levelRestart.onclick=()=>newGame();
 soundBtn.onclick=()=>{soundOn=!soundOn;localStorage.setItem("jwetMabSound",soundOn?"on":"off");soundBtn.textContent=soundOn?"🔊":"🔇";if(soundOn)tone(660,.06);};
 
 const aboutBtn=document.getElementById("aboutBtn");
