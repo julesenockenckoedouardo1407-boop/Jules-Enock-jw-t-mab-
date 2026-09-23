@@ -1,13 +1,13 @@
 {
-  "name": "Jules Enock jwèt mab",
-  "short_name": "Jtè Mab",
-  "description": "Jwèt mab ayisyen Jules Enock, conçu pour fonctionner offline.",
+  "name": "Jules Enock Lestekè — Jwèt Mab",
+  "short_name": "Jwèt Mab",
+  "description": "Jwèt mab ayisyen Jules Enock Lestekè.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1e1e2f",
-  "theme_color": "#ff5722",
+  "background_color": "#10200f",
+  "theme_color": "#ffd400",
   "icons": [
     {
       "src": "./icons/icon-192.png",
