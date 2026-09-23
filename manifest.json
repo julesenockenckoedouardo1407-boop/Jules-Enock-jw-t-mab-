@@ -2,7 +2,9 @@
   "name": "Jules Enock Lestekè — Jwèt Mab",
   "short_name": "Jwèt Mab",
   "description": "Jwèt mab ayisyen Jules Enock Lestekè.",
-  "start_url": "./index.html",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -13,13 +15,25 @@
       "src": "./icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

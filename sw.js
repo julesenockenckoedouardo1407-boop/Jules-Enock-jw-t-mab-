@@ -1,4 +1,4 @@
-const CACHE_NAME = "jules-enock-jwet-mab-v2";
+const CACHE_NAME = "jules-enock-jwet-mab-v3";
 const CORE = [
   "./",
   "./index.html",
