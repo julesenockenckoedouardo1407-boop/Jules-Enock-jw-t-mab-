@@ -14,25 +14,25 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icons/icon-192.png",
+      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icons/icon-512.png",
+      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icons/icon-192-maskable.png",
+      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icons/icon-512-maskable.png",
+      "src": "https://julesenockenckoedouardo1407-boop.github.io/Jules-Enock-Lestek-n-g-f-a/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
