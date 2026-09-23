@@ -2,10 +2,6 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<link rel="manifest" href="./manifest.json">
-<link rel="icon" type="image/png" sizes="48x48" href="./icons/favicon-48.png">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<meta name="theme-color" content="#ffd400">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Jules Enock Lestekè — Jwèt Mab</title>
 <style>
@@ -17,6 +13,17 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
 #power{position:fixed;left:50%;top:62px;transform:translateX(-50%);width:min(70vw,330px);height:13px;border:2px solid #fff;border-radius:20px;overflow:hidden;background:#0008;display:none}
 #power i{display:block;height:100%;width:0%;background:#ffd400}
 #restart{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);display:none;border:0;border-radius:16px;padding:13px 20px;background:#ffd400;color:#111;font-size:18px;font-weight:900}
+#aboutBtn{position:fixed;right:12px;bottom:76px;border:0;border-radius:14px;padding:10px 13px;background:#111cdd;color:#fff;font-size:13px;font-weight:900;box-shadow:0 2px 8px #0008;z-index:5}
+#aboutModal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+#aboutModal[hidden]{display:none}
+#aboutCard{position:relative;width:min(88vw,390px);box-sizing:border-box;background:#173014;border:3px solid #d8c18b;border-radius:24px;padding:28px 22px 22px;text-align:center;box-shadow:0 10px 35px #000b}
+#aboutCard h2{margin:5px 0 3px;color:#ffd400;font-size:24px}
+#aboutCard h3{margin:0 0 15px;font-size:21px}
+#aboutCard p{margin:9px 0;line-height:1.4}
+#aboutCard .offline{color:#ffd400;font-weight:bold}
+.aboutIcon{font-size:42px}
+#aboutClose{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#fff;font-size:32px;line-height:1;padding:4px 10px}
+#aboutOk{margin-top:14px;border:0;border-radius:14px;padding:11px 22px;background:#ffd400;color:#111;font-weight:900;font-size:15px}
 </style>
 </head>
 <body>
@@ -30,6 +37,20 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;fon
 <div id="power"><i></i></div>
 <div id="msg">⚪ Place la bille blanche autour du cercle.</div>
 <button id="restart">REJOUER</button>
+<button id="aboutBtn" aria-label="À propos">À PROPOS</button>
+<div id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" hidden>
+  <div id="aboutCard">
+    <button id="aboutClose" aria-label="Fermer">×</button>
+    <div class="aboutIcon">🎯</div>
+    <h2 id="aboutTitle">Jules Enock Lestekè</h2>
+    <h3>Jwèt Mab</h3>
+    <p>Un jeu de billes simple, inspiré du jeu de mab.</p>
+    <p><strong>Version :</strong> 1.0.0</p>
+    <p><strong>Créé par :</strong> Jules Enock Lestekè</p>
+    <p class="offline">📴 Fonctionne hors connexion.</p>
+    <button id="aboutOk">FERMER</button>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -212,6 +233,17 @@ function finish(win,reason){
 }
 restart.onclick=newGame;
 
+const aboutBtn=document.getElementById("aboutBtn");
+const aboutModal=document.getElementById("aboutModal");
+const aboutClose=document.getElementById("aboutClose");
+const aboutOk=document.getElementById("aboutOk");
+function closeAbout(){aboutModal.hidden=true}
+aboutBtn.onclick=()=>{aboutModal.hidden=false};
+aboutClose.onclick=closeAbout;
+aboutOk.onclick=closeAbout;
+aboutModal.addEventListener("click",e=>{if(e.target===aboutModal)closeAbout()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAbout()});
+
 function drawBall(b,white=false){
  if(!white&&!b.active)return;
  ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
@@ -245,11 +277,6 @@ function draw(){
 }
 function loop(){physics();draw();requestAnimationFrame(loop)}
 resize();newGame();loop();
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
-}
 </script>
 </body>
 </html>
