@@ -1,246 +1,55 @@
-<!doctype html>
-<html lang="fr">
+<!DOCTYPE html>
+<html lang="ht">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Jules Enock Lestekè — Jwèt Mab</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10200f;font-family:Arial,sans-serif;color:#fff;touch-action:none}
-#game{display:block;width:100vw;height:100vh;background:radial-gradient(circle,#6b7d42 0,#263b20 52%,#101a0d 100%)}
-#ui{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
-.badge{background:#111cdd;color:#fff;padding:8px 11px;border-radius:12px;font-weight:bold;box-shadow:0 2px 8px #0008}
-#msg{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(92vw,560px);text-align:center;background:#000b;padding:11px 14px;border-radius:14px;font-weight:bold;line-height:1.35;pointer-events:none}
-#power{position:fixed;left:50%;top:62px;transform:translateX(-50%);width:min(70vw,330px);height:13px;border:2px solid #fff;border-radius:20px;overflow:hidden;background:#0008;display:none}
-#power i{display:block;height:100%;width:0%;background:#ffd400}
-#restart{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);display:none;border:0;border-radius:16px;padding:13px 20px;background:#ffd400;color:#111;font-size:18px;font-weight:900}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#ff5722">
+  <meta name="description" content="Jules Enock jwèt mab — yon jwèt mab ayisyen ki mache offline.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+  <title>Jules Enock jwèt mab</title>
 </head>
 <body>
-<canvas id="game"></canvas>
-<div id="ui">
- <div class="badge">Billes: <span id="left">10</span></div>
- <div class="badge">Gagnées: <span id="won">0</span></div>
- <div class="badge">Tirs: <span id="shots">0</span></div>
- <div class="badge">Score: <span id="score">0</span></div>
-</div>
-<div id="power"><i></i></div>
-<div id="msg">⚪ Place la bille blanche autour du cercle.</div>
-<button id="restart">REJOUER</button>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">🇭🇹 Jwèt tradisyonèl ayisyen</p>
+        <h1>Jules Enock jwèt mab</h1>
+      </div>
+      <div class="score-card" aria-label="Nòt">
+        <span>Nòt</span>
+        <strong id="score">0</strong>
+      </div>
+    </header>
 
-<script>
-"use strict";
-const C=document.getElementById("game"),ctx=C.getContext("2d");
-const leftEl=document.getElementById("left"),wonEl=document.getElementById("won"),
-shotsEl=document.getElementById("shots"),scoreEl=document.getElementById("score");
-const msg=document.getElementById("msg"),powerBox=document.getElementById("power"),powerFill=powerBox.firstElementChild,restart=document.getElementById("restart");
+    <section class="game-card">
+      <div class="instructions">
+        <strong>Vize epi tire!</strong>
+        <span>Glise soti sou mab ble a pou lanse li sou mab yo. Plis mab ou frape, plis pwen ou jwenn.</span>
+      </div>
 
-let W,H,cx,cy,R,dpr=1;
-let shooter,balls,phase,score,shots,won,aim,place,settleTimer,shotId=0;
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" aria-label="Tab jwèt mab"></canvas>
+        <div id="message" class="message">Pare? Fè yon pichenèt 👆</div>
+      </div>
 
-function resize(){
- dpr=Math.min(devicePixelRatio||1,2); W=innerWidth;H=innerHeight;
- C.width=W*dpr;C.height=H*dpr;C.style.width=W+"px";C.style.height=H+"px";
- ctx.setTransform(dpr,0,0,dpr,0,0); cx=W/2;cy=H/2+20;R=Math.min(W,H)*.30;
- if(phase==="place"||phase==="intro") placeShooter(shooter.angle);
-}
-addEventListener("resize",resize);
+      <div class="controls">
+        <div class="stat"><span>Mab frape</span><strong id="hits">0</strong></div>
+        <button id="resetBtn" type="button">↻ Nouvo pati</button>
+        <div class="stat"><span>Tantativ</span><strong id="shots">0</strong></div>
+      </div>
+    </section>
 
-function ball(x,y,r,color){
- return {x,y,r,vx:0,vy:0,color,active:true,id:Math.random()};
-}
-function placeShooter(a){
- shooter.angle=a;
- shooter.x=cx+Math.cos(a)*(R+shooter.r+28);
- shooter.y=cy+Math.sin(a)*(R+shooter.r+28);
- shooter.vx=shooter.vy=0;
-}
-function newGame(){
- score=0;shots=0;won=0;shotId=0;phase="place";aim=null;place=null;settleTimer=0;
- shooter=ball(0,0,14,"white"); shooter.angle=-Math.PI/2;
- placeShooter(shooter.angle);
- const p=[[-.52,-.12],[-.27,-.34],[0,-.35],[.27,-.34],[.52,-.12],
- [-.40,.14],[-.14,.08],[.15,.08],[.40,.14],[0,.34]];
- balls=p.map((q,i)=>ball(cx+q[0]*R,cy+q[1]*R,13,["#ff4040","#ffd22e","#42a5ff","#ff70c8","#ff8a35","#73e06f","#b58cff","#fff","#43d6d1","#ff9a42"][i]));
- restart.style.display="none"; powerBox.style.display="none";
- setMsg("⚪ Déplace la bille blanche autour du cercle pour choisir ton angle.");
- updateUI();
-}
-function setMsg(t){msg.textContent=t}
-function updateUI(){
- leftEl.textContent=balls.filter(b=>b.active).length;
- wonEl.textContent=won;shotsEl.textContent=shots;scoreEl.textContent=score;
-}
+    <footer>Jules Enock • Jwèt mab 🇭🇹</footer>
+  </main>
 
-function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
-function pointer(e){
- const r=C.getBoundingClientRect();
- return {x:e.clientX-r.left,y:e.clientY-r.top};
-}
-function nearShooter(p){return Math.hypot(p.x-shooter.x,p.y-shooter.y)<34}
-
-C.addEventListener("pointerdown",e=>{
- e.preventDefault(); C.setPointerCapture(e.pointerId); const p=pointer(e);
- if(phase==="place"){
-   if(nearShooter(p)){place={startAngle:Math.atan2(p.y-cy,p.x-cx)}; setMsg("↔ Fais glisser autour du cercle pour placer la bille.");}
- }else if(phase==="ready"){
-   if(nearShooter(p)){
-     aim={startX:p.x,startY:p.y,x:p.x,y:p.y};
-     powerBox.style.display="block"; setMsg("⬇ Tire la bille vers l'intérieur pour charger la puissance, puis relâche.");
-   }
- }else if(phase==="over"){}
-});
-C.addEventListener("pointermove",e=>{
- e.preventDefault(); const p=pointer(e);
- if(phase==="place" && place){
-   const a=Math.atan2(p.y-cy,p.x-cx); placeShooter(a);
- }else if(phase==="ready" && aim){
-   aim.x=p.x;aim.y=p.y;
-   const pull=Math.hypot(shooter.x-p.x,shooter.y-p.y);
-   const pct=Math.max(0,Math.min(100,(pull-5)/Math.max(30,R*.65)*100));
-   powerFill.style.width=pct+"%";
-   setMsg("Puissance : "+Math.round(pct)+"% — relâche pour tirer vers l'intérieur.");
- }
-});
-C.addEventListener("pointerup",e=>{
- e.preventDefault(); const p=pointer(e);
- if(phase==="place" && place){
-   place=null;phase="ready";
-   setMsg("🎯 Maintenant, touche ⚪ et tire-la vers l'intérieur. Relâche pour frapper.");
- }else if(phase==="ready" && aim){
-   aim.x=p.x;aim.y=p.y;
-   const dx=shooter.x-p.x,dy=shooter.y-p.y,L=Math.hypot(dx,dy);
-   aim=null;powerBox.style.display="none";
-   if(L<10){setMsg("Tire la bille vers l'intérieur avant de relâcher.");return}
-   const power=Math.min(23,Math.max(5,5+L*.085));
-   const len=Math.max(L,1);
-   shooter.vx=dx/len*power; shooter.vy=dy/len*power;
-   shots++;shotId++;phase="moving";settleTimer=0;
-   setMsg("💥 Tir #"+shots+" — les collisions sont calculées automatiquement.");
-   updateUI();
- }
-});
-C.addEventListener("pointercancel",()=>{aim=null;place=null;powerBox.style.display="none"});
-
-function collide(a,b){
- const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),min=a.r+b.r;
- if(d===0||d>=min)return false;
- const nx=dx/d,ny=dy/d,over=min-d;
- b.x+=nx*over*.5;b.y+=ny*over*.5;a.x-=nx*over*.5;a.y-=ny*over*.5;
- const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
- if(rv>=0)return true;
- const impulse=-rv*1.28;
- a.vx-=impulse*nx;a.vy-=impulse*ny;
- b.vx+=impulse*nx;b.vy+=impulse*ny;
- return true;
-}
-
-function physics(){
- if(phase==="moving"){
-   const arr=balls.filter(b=>b.active);
-   shooter.x+=shooter.vx;shooter.y+=shooter.vy;
-   shooter.vx*=.986;shooter.vy*=.986;
-
-   for(const b of arr){
-     b.x+=b.vx;b.y+=b.vy;b.vx*=.992;b.vy*=.992;
-   }
-
-   // Shooter -> targets. Multiple collisions are allowed in the same shot.
-   for(const b of arr){
-     if(collide(shooter,b)){
-       // extra impulse toward the current shooting direction
-       const s=Math.hypot(shooter.vx,shooter.vy)||1;
-       b.vx += (shooter.vx/s)*1.5;
-       b.vy += (shooter.vy/s)*1.5;
-     }
-   }
-   // Target -> target
-   for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++)collide(arr[i],arr[j]);
-
-   // A target is won ONLY after its center genuinely crosses the circle boundary.
-   for(const b of arr){
-     const d=Math.hypot(b.x-cx,b.y-cy);
-     if(d>R+b.r*.05){
-       b.active=false;won++;score+=10;
-     }else if(d>R-b.r*.72){
-       // Soft inward correction, but never trap a fast outward marble.
-       const nx=(b.x-cx)/(d||1),ny=(b.y-cy)/(d||1);
-       const outward=b.vx*nx+b.vy*ny;
-       if(outward<2.0){
-         b.x=cx+nx*(R-b.r);
-         b.y=cy+ny*(R-b.r);
-         b.vx-=outward*nx*1.55;b.vy-=outward*ny*1.55;
-       }
-     }
-   }
-
-   // White marble stays physically outside. If it goes far away, the shot is simply over.
-   const sd=Math.hypot(shooter.x-cx,shooter.y-cy);
-   const outerMax=Math.max(R+190,Math.min(W,H)*.60);
-   if(sd>outerMax){shooter.vx*=.5;shooter.vy*=.5;shooter.x=cx+(shooter.x-cx)/sd*outerMax;shooter.y=cy+(shooter.y-cy)/sd*outerMax}
-
-   updateUI();
-
-   const speed=Math.hypot(shooter.vx,shooter.vy);
-   const targetSpeed=arr.reduce((m,b)=>Math.max(m,Math.hypot(b.vx,b.vy)),0);
-   if(speed<.10 && targetSpeed<.10) settleTimer++;
-   else settleTimer=0;
-
-   if(won===balls.length){finish(true);return}
-   if(settleTimer>12){
-     // If the shooter has entered the circle and stopped, the player loses.
-     if(Math.hypot(shooter.x-cx,shooter.y-cy)<R-shooter.r){
-       finish(false,"La bille blanche est restée dans le cercle : tir perdu.");
-       return;
-     }
-     // Reposition ONLY after the shot has naturally ended, outside the circle.
-     const ang=Math.atan2(shooter.y-cy,shooter.x-cx);
-     placeShooter(ang); phase="place";
-     setMsg("Tir terminé. ⚪ Replace la bille autour du cercle pour choisir un nouvel angle.");
-   }
- }
-}
-
-function finish(win,reason){
- phase="over";updateUI();restart.style.display="block";
- setMsg(win
-   ?"🏆 PARTIE TERMINÉE ! Toutes les billes sont sorties. Billes gagnées : "+won+" • Tirs : "+shots+" • Score : "+score
-   :"❌ PARTIE TERMINÉE. "+(reason||"Plus aucun tir possible.")+" Billes gagnées : "+won+" • Tirs : "+shots+" • Score : "+score);
-}
-restart.onclick=newGame;
-
-function drawBall(b,white=false){
- if(!white&&!b.active)return;
- ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
- const g=ctx.createRadialGradient(b.x-b.r*.35,b.y-b.r*.35,1,b.x,b.y,b.r);
- if(white){g.addColorStop(0,"#fff");g.addColorStop(.65,"#ddd");g.addColorStop(1,"#888")}
- else {g.addColorStop(0,"#fff");g.addColorStop(.18,b.color);g.addColorStop(1,b.color)}
- ctx.fillStyle=g;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle="#111";ctx.stroke();
-}
-
-function draw(){
- ctx.clearRect(0,0,W,H);
- // ground
- ctx.beginPath();ctx.arc(cx,cy,R+5,0,Math.PI*2);ctx.fillStyle="#8b754a";ctx.fill();
- ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fillStyle="#5b8b42";ctx.fill();
- ctx.lineWidth=5;ctx.strokeStyle="#d8c18b";ctx.stroke();
-
- // aiming guide: drag inward -> opposite vector is firing direction inward
- if(aim){
-   const dx=shooter.x-aim.x,dy=shooter.y-aim.y,L=Math.hypot(dx,dy)||1;
-   const q=Math.min(150,L*1.8),tx=shooter.x+dx/L*q,ty=shooter.y+dy/L*q;
-   ctx.setLineDash([8,7]);ctx.lineWidth=4;ctx.strokeStyle="#ffd400";
-   ctx.beginPath();ctx.moveTo(shooter.x,shooter.y);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);
-   const a=Math.atan2(dy,dx);
-   ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx-Math.cos(a-.5)*18,ty-Math.sin(a-.5)*18);ctx.lineTo(tx-Math.cos(a+.5)*18,ty-Math.sin(a+.5)*18);ctx.closePath();ctx.fillStyle="#ffd400";ctx.fill();
- }
- for(const b of balls)drawBall(b,false);
- drawBall(shooter,true);
- if(phase==="place"){
-   ctx.beginPath();ctx.arc(cx,cy,R+shooter.r+28,0,Math.PI*2);ctx.setLineDash([4,8]);ctx.lineWidth=2;ctx.strokeStyle="#fff8";ctx.stroke();ctx.setLineDash([]);
- }
-}
-function loop(){physics();draw();requestAnimationFrame(loop)}
-resize();newGame();loop();
-</script>
+  <script src="./app.js" defer></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
+      });
+    }
+  </script>
 </body>
 </html>
