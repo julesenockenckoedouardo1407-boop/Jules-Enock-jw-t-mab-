@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#ff5722">
+  <meta name="description" content="Jules Enock jwèt mab — yon jwèt mab ayisyen ki mache offline.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+  <title>Jules Enock jwèt mab</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">🇭🇹 Jwèt tradisyonèl ayisyen</p>
+        <h1>Jules Enock jwèt mab</h1>
+      </div>
+      <div class="score-card" aria-label="Nòt">
+        <span>Nòt</span>
+        <strong id="score">0</strong>
+      </div>
+    </header>
+
+    <section class="game-card">
+      <div class="instructions">
+        <strong>Vize epi tire!</strong>
+        <span>Glise soti sou mab ble a pou lanse li sou mab yo. Plis mab ou frape, plis pwen ou jwenn.</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" aria-label="Tab jwèt mab"></canvas>
+        <div id="message" class="message">Pare? Fè yon pichenèt 👆</div>
+      </div>
+
+      <div class="controls">
+        <div class="stat"><span>Mab frape</span><strong id="hits">0</strong></div>
+        <button id="resetBtn" type="button">↻ Nouvo pati</button>
+        <div class="stat"><span>Tantativ</span><strong id="shots">0</strong></div>
+      </div>
+    </section>
+
+    <footer>Jules Enock • Jwèt mab 🇭🇹</footer>
+  </main>
+
+  <script src="./app.js" defer></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
